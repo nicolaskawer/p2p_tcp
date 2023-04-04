@@ -19,10 +19,24 @@ def server_start(port_input):
             conn, addr = server_socket.accept()
             data_protocol = conn.recv(1)
             type_, sub_type, len_, sub_len = data_protocol[0], data_protocol[1], data_protocol[2], data_protocol[3]
-            if type == 0:
+            if type_ == 0:
                 servers_dict[addr[0]] = addr[1]
+                print(f'Connected to {addr}')
                 if sub_type == 0:
                     for key, value in servers_dict.items():
+                        # send the key as a string
+                        server_socket.sendall(str(key).encode())
+
+                        # send a separator character
+                        server_socket.sendall(':'.encode())
+
+                        # send the value as a string
+                        servers_dict.sendall(str(value).encode())
+
+                        # send a delimiter character
+                        servers_dict.sendall('\0'.encode())
+                elif sub_type == 1:
+                    for key, value in clients_dict.items():
                         # send the key as a string
                         server_socket.sendall(str(key).encode())
 
@@ -34,8 +48,10 @@ def server_start(port_input):
 
                         # send a delimiter character
                         servers_dict.sendall(';'.encode())
-            print(f'Connected to {addr}')
-            server_socket = {}
+
+            elif type_ == 1:
+                server_socket.recv(1024)
+
 
 
 
