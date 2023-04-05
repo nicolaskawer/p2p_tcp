@@ -26,31 +26,28 @@ def server_start(port_input):
                     for key, value in servers_dict.items():
                         # send the key as a string
                         server_socket.sendall(str(key).encode())
-
                         # send a separator character
                         server_socket.sendall(':'.encode())
-
                         # send the value as a string
-                        servers_dict.sendall(str(value).encode())
-
-                        # send a delimiter character
-                        servers_dict.sendall('\0'.encode())
+                        server_socket.sendall(str(value).encode())
+                        server_socket.sendall('\0'.encode())
                 elif sub_type == 1:
-                    for key, value in clients_dict.items():
-                        # send the key as a string
+                    for key in clients_dict.items():
                         server_socket.sendall(str(key).encode())
-
-                        # send a separator character
-                        server_socket.sendall('='.encode())
-
-                        # send the value as a string
-                        servers_dict.sendall(str(value).encode())
-
-                        # send a delimiter character
-                        servers_dict.sendall(';'.encode())
+                        server_socket.sendall('\0'.encode())
 
             elif type_ == 1:
-                server_socket.recv(1024)
+                if data_protocol:
+                    # convert the bytes to a string
+                    data_str = data_protocol.decode()
+                    if sub_type == 0:
+                        # split the string into key-value pairs
+                        pairs = data_str.split('\0')
+                        for pair in pairs:
+                            # split each pair into key and value
+                            key, value = pair.split(':')
+
+
 
 
 
