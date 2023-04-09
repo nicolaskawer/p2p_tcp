@@ -8,21 +8,24 @@ servers_dict = {}
 clients_dict = {}
 my_data_protocol = []
 ports = [1000, 1001, 1002, 1003, 1004]
+
+
 def server_start(port_input):
     # Create a socket and start listening on the port
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('127.0.0.1', port_input))
     server_socket.listen()
+
     def wait_for_conns():
         while True:
             conn, addr = server_socket.accept()
             # Receive the first 6 bytes of the data from the connection
             data_protocol = conn.recv(6)
             # Extract the data type, subtype, length of the data and the length of the subtype from the received data
-            #type_- first byte represents the type of data
-            #sub_type -second byte represents the subtype of data
-            #len_- third and fourth bytes represent the length of the data in bytes, converted to integer using big-endian byte order
-            #sub_len - fifth and sixth bytes represent the length of the subtype in bytes, converted to integer using big-endian byte order
+            # type_- first byte represents the type of data
+            # sub_type -second byte represents the subtype of data
+            # len_- third and fourth bytes represent the length of the data in bytes, converted to integer using big-endian byte order
+            # sub_len - fifth and sixth bytes represent the length of the subtype in bytes, converted to integer using big-endian byte order
             type_, sub_type, len_, sub_len = data_protocol[0], data_protocol[1], int.from_bytes(data_protocol[2:4],'big'), int.from_bytes(data_protocol[4:6],'big')
             if type_ == 0:
                 servers_dict[addr[0]] = addr[1]
@@ -67,7 +70,6 @@ def server_start(port_input):
                     print(f'client: {client_ids} is received')
                     for client_id in client_ids:
                         # add the client to the list of clients
-                        ASk
                         clients_dict[client_id] = server_socket
 
             elif type_ == 2:
@@ -88,16 +90,13 @@ def server_start(port_input):
                 print(f"{username}: {message}")
                 # add sender's username and forward message to recipient or other server
                 if username in clients_dict.values():
-                    for client_socket, client_username in clients_dict.items():
-                        if client_username != username:
-                            client_socket.sendall(bytes([1, 3]) + bytes([0, len(username)]) + username.encode() + message.encode())
+                    clients_dict[username].sendall(bytes([1, 3]) + bytes([0, len(username)]) + username.encode() + message.encode())
                 else:
                     for server_address, server_name in servers_dict.items():
-                        if server_name != username:
-                            forward_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            forward_socket.connect(server_address)
-                            forward_socket.sendall(bytes([1, 3]) + bytes([0, len(server_name + '\b' + username)]) + (server_name + '\b' + username).encode() + message.encode())
-                            forward_socket.close()
+                        forward_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        forward_socket.connect(server_address)
+                        forward_socket.sendall(bytes([1, 3]) + bytes([0, len(server_name + 'b\0' + username)]) + (server_name + 'b\0' + username).encode() + message.encode())
+                        forward_socket.close()
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
