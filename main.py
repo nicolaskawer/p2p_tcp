@@ -80,16 +80,26 @@ def respond_function(conn_socket, conn_address):
                 name, message = message[0:sublen], message[sublen:]  # split message data
                 if conn_address in clients_dict:  # if this is a client
                     sender_name = clients_dict[conn_address][0]
-                    name = sender_name.encode() + b'\0' + name
+                    name = sender_name.encode() + b'\0' + name # split and slice its name and the message to send
                     for temp1, socket in servers_dict.items():  # broadcast to all servers
                         reply = convertData(messageType=3, subtype=0, data=message, pData=name)
                         socket.send(reply)
-
+                """ explanation: when the message is sent as broadcast to all servers the type of the message is 3 than we
+                                    want that the servers which got the message will send it to their own clients so we run in FOR LOOP to send the message 
+                                    for each server's client list(cause when the message-type 3 will be sent to server, 
+                                    he will come to this scope of code (the following for loop->)"""
                 for client_addr, conne in clients_dict.items():
                     client_sock = conne[1]
                     reply = convertData(messageType=3, subtype=0, data=message, pData=name)
                     client_sock.send(reply)
+
+            elif type == 4:  # echo message
+                reply = convertData(messageType=4, subtype=0, data=b'')
+                conn_socket.send(reply)
+
         conn_socket.close()
+    except ConnectionResetError:
+        pass
     except OSError:
         pass
 
